@@ -1,17 +1,15 @@
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
-
-// Pretpostavka je da se vaše rute nalaze u app.routes.ts
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { authInterceptor } from './core/model/interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-
-    // LINIJA KOJA JE IZAZIVALA GREŠKU JE UKLONJENA (provideClientHydration())
-
-    // Dodajemo HttpClient provajder na ispravan, standalone način
-    provideHttpClient(withFetch())
+    // Registrujemo interceptor koji će dodavati token u zahteve
+    provideHttpClient(withInterceptors([authInterceptor]))
   ]
 };
+

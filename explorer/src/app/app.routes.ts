@@ -1,7 +1,8 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
-import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
+import { DashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
 import {authGuard } from './guards/auth.guard';
+import { AdminLayoutComponent } from './components/admin-layout/admin-layout.component';
 
 export const routes: Routes = [
   // Ruta za stranicu za prijavu

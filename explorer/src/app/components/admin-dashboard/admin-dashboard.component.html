@@ -1,5 +1,187 @@
-<div class="dashboard-container">
-  <h1>Admin Dashboard</h1>
-  <p>Welcome, Administrator!</p>
-  <p>This is where you will manage certificates and CA users.</p>
-  </div>
+<div class="page-container">
+    @if (successMessage()) {
+        <div class="notification notification--success" role="alert">
+            <strong class="notification__title">Uspeh!</strong>
+            <span class="notification__message">{{ successMessage() }}</span>
+        </div>
+    }
+    @if (errorMessage() && !showIssueModal() && !showAddCaUserModal() && !showRevokeModal()) {
+        <div class="notification notification--error" role="alert">
+            <strong class="notification__title">Greška!</strong>
+            <span class="notification__message">{{ errorMessage() }}</span>
+        </div>
+    }
+
+    <div class="page-header">
+        <h1 class="page-header__title">Pregled Sertifikata</h1>
+        <div class="page-header__actions">
+            <button (click)="showAddCaUserModal.set(true)" class="btn btn--success">Dodaj CA Korisnika</button>
+            <button (click)="showIssueModal.set(true); issueModalData = getInitialIssueData()" class="btn btn--primary">Izdaj Sertifikat</button>
+        </div>
+    </div>
+
+    <div class="certificate-table">
+        <div class="certificate-table__wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Status</th>
+                        <th scope="col">Tip</th>
+                        <th scope="col">Common Name (CN)</th>
+                        <th scope="col">Serijski Broj</th>
+                        <th scope="col">Važi do</th>
+                        <th scope="col" class="cell--actions">Akcije</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if(isLoading()){
+                        <tr><td colspan="6" class="table-message">Učitavanje...</td></tr>
+                    }
+                    @for(cert of certificates(); track cert.serialNumber){
+                        <tr>
+                            <td>
+                                @if(cert.revoked) {
+                                    <span class="status-badge status-badge--revoked">Povučen</span>
+                                } @else {
+                                    <span class="status-badge status-badge--active">Aktivan</span>
+                                }
+                            </td>
+                            <td>{{cert.type}}</td>
+                            <td class="cell--important">{{getCommonName(cert.subject)}}</td>
+                            <td class="cell--monospace">{{cert.serialNumber}}</td>
+                            <td>{{cert.validTo | date:'dd.MM.yyyy'}}</td>
+                            <td class="cell--actions">
+                                @if(!cert.revoked) {
+                                    <button (click)="openRevokeModal(cert.serialNumber)" class="action-link">Povuci</button>
+                                } @else {
+                                    <span class="action-placeholder">Nema akcija</span>
+                                }
+                            </td>
+                        </tr>
+                    } @empty {
+                        @if(!isLoading()){
+                            <tr><td colspan="6" class="table-message">Nema sertifikata u sistemu.</td></tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@if(showIssueModal()){
+    <div class="modal">
+        <div class="modal__backdrop" (click)="closeAllModals()"></div>
+        <div class="modal__container modal__container--lg">
+            <form #issueForm="ngForm" (ngSubmit)="onIssueCertificate()">
+                <div class="modal__body">
+                    <h3 class="modal__title">Izdavanje Novog Sertifikata</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Tip Sertifikata</label>
+                            <select name="type" [(ngModel)]="issueModalData.type" class="form-control">
+                                <option value="END_ENTITY">End-Entity</option>
+                                <option value="INTERMEDIATE">Intermediate</option>
+                                <option value="ROOT">Root</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" [class.is-disabled]="issueModalData.type === 'ROOT'">
+                            <label class="form-label">Izdavalac (CA)</label>
+                            <select name="issuerSerialNumber" [(ngModel)]="issueModalData.issuerSerialNumber" [disabled]="issueModalData.type === 'ROOT'" class="form-control">
+                                <option value="" disabled>Izaberite izdavaoca...</option>
+                                @for(ca of caCertificates(); track ca.serialNumber){
+                                    <option [value]="ca.serialNumber">{{ getCommonName(ca.subject) }}</option>
+                                }
+                            </select>
+                        </div>
+
+                        <input type="text" name="commonName" [(ngModel)]="issueModalData.subjectData.commonName" placeholder="Common Name (npr. www.sajt.com)" class="form-control" required>
+                        <input type="text" name="organization" [(ngModel)]="issueModalData.subjectData.organization" placeholder="Organizacija" class="form-control" required>
+                        <input type="text" name="organizationalUnit" [(ngModel)]="issueModalData.subjectData.organizationalUnit" placeholder="Organizaciona Jedinica" class="form-control" required>
+                        <input type="text" name="country" [(ngModel)]="issueModalData.subjectData.country" placeholder="Država (kod)" class="form-control" required>
+
+                        <div class="form-group form-group--full-width">
+                            <input type="email" name="email" [(ngModel)]="issueModalData.subjectData.email" placeholder="Email" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Važi Od</label>
+                            <input type="date" name="validFrom" [(ngModel)]="issueModalData.validFrom" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Važi Do</label>
+                            <input type="date" name="validTo" [(ngModel)]="issueModalData.validTo" class="form-control" required>
+                        </div>
+                    </div>
+                    @if (errorMessage()) { <p class="error-message">{{ errorMessage() }}</p> }
+                </div>
+
+                <div class="modal__footer">
+                    <button type="button" (click)="closeAllModals()" class="btn btn--secondary">Otkaži</button>
+                    <button type="submit" [disabled]="isLoading() || issueForm.invalid" class="btn btn--primary">
+                        @if(isLoading()){ <svg class="spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 4.75V6.25"></path><path d="M17.125 6.875L16.065 7.935"></path><path d="M19.25 12L17.75 12"></path><path d="M17.125 17.125L16.065 16.065"></path><path d="M12 19.25V17.75"></path><path d="M6.875 17.125L7.935 16.065"></path><path d="M4.75 12L6.25 12"></path><path d="M6.875 6.875L7.935 7.935"></path></svg> Izdavanje... } @else { Izdaj }
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@if(showAddCaUserModal()){
+    <div class="modal">
+        <div class="modal__backdrop" (click)="closeAllModals()"></div>
+        <div class="modal__container modal__container--md">
+            <form #addUserForm="ngForm" (ngSubmit)="onAddCaUser()">
+                <div class="modal__body">
+                    <h3 class="modal__title">Dodavanje Novog CA Korisnika</h3>
+                    <div class="form-stacked">
+                        <input type="email" name="email" [(ngModel)]="addCaUserData.email" placeholder="Email" class="form-control" required>
+                        <input type="text" name="firstName" [(ngModel)]="addCaUserData.firstName" placeholder="Ime" class="form-control" required>
+                        <input type="text" name="lastName" [(ngModel)]="addCaUserData.lastName" placeholder="Prezime" class="form-control" required>
+                        <input type="text" name="organization" [(ngModel)]="addCaUserData.organization" placeholder="Organizacija" class="form-control" required>
+                    </div>
+                    @if (errorMessage()) { <p class="error-message">{{ errorMessage() }}</p> }
+                </div>
+                <div class="modal__footer">
+                    <button type="button" (click)="closeAllModals()" class="btn btn--secondary">Otkaži</button>
+                    <button type="submit" [disabled]="isLoading() || addUserForm.invalid" class="btn btn--success">
+                        @if(isLoading()){ <svg class="spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 4.75V6.25"></path><path d="M17.125 6.875L16.065 7.935"></path><path d="M19.25 12L17.75 12"></path><path d="M17.125 17.125L16.065 16.065"></path><path d="M12 19.25V17.75"></path><path d="M6.875 17.125L7.935 16.065"></path><path d="M4.75 12L6.25 12"></path><path d="M6.875 6.875L7.935 7.935"></path></svg> Dodavanje... } @else { Dodaj }
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@if(showRevokeModal()){
+    <div class="modal">
+        <div class="modal__backdrop" (click)="closeAllModals()"></div>
+        <div class="modal__container modal__container--md">
+            <form #revokeForm="ngForm" (ngSubmit)="onRevokeCertificate()">
+                <div class="modal__body">
+                    <h3 class="modal__title">Povlačenje Sertifikata</h3>
+                    <p class="modal__subtitle">Serijski broj: <span class="code">{{revokeModalData.serialNumber}}</span></p>
+                    <div class="form-group">
+                        <label class="form-label">Razlog povlačenja</label>
+                        <select name="reason" [(ngModel)]="revokeModalData.reason" class="form-control">
+                            <option>Unspecified</option>
+                            <option>Key Compromise</option>
+                            <option>CA Compromise</option>
+                            <option>Affiliation Changed</option>
+                            <option>Superseded</option>
+                            <option>Cessation of Operation</option>
+                        </select>
+                    </div>
+                    @if (errorMessage()) { <p class="error-message">{{ errorMessage() }}</p> }
+                </div>
+                <div class="modal__footer">
+                    <button type="button" (click)="closeAllModals()" class="btn btn--secondary">Otkaži</button>
+                    <button type="submit" [disabled]="isLoading()" class="btn btn--danger">
+                        @if(isLoading()){ <svg class="spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 4.75V6.25"></path><path d="M17.125 6.875L16.065 7.935"></path><path d="M19.25 12L17.75 12"></path><path d="M17.125 17.125L16.065 16.065"></path><path d="M12 19.25V17.75"></path><path d="M6.875 17.125L7.935 16.065"></path><path d="M4.75 12L6.25 12"></path><path d="M6.875 6.875L7.935 7.935"></path></svg> Povlačenje... } @else { Potvrdi Povlačenje }
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
