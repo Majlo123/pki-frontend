@@ -1,0 +1,62 @@
+import { Injectable, signal } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { Router } from '@angular/router';
+import { User } from '../core/model/user.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  private apiBaseUrl = 'https://localhost:8443/api';
+  private authTokenKey = 'pki_admin_token';
+  private userEmailKey = 'pki_admin_email';
+
+  isLoggedIn = signal<boolean>(this.hasToken());
+  currentUserEmail = signal<string | null>(localStorage.getItem(this.userEmailKey));
+
+  constructor(private http: HttpClient, private router: Router) { }
+
+  login(email: string, password: string): Observable<boolean> {
+    const token = 'Basic ' + btoa(`${email}:${password}`);
+    const headers = new HttpHeaders({ Authorization: token });
+
+    // Pozivamo /auth/me da proverimo da li je korisnik ADMIN
+    return this.http.get<User>(`${this.apiBaseUrl}/auth/me`, { headers }).pipe(
+      map((user) => {
+        // Proveravamo da li je uloga ADMIN
+        if (user && user.role === 'ADMIN') {
+            localStorage.setItem(this.authTokenKey, token);
+            localStorage.setItem(this.userEmailKey, email);
+            this.isLoggedIn.set(true);
+            this.currentUserEmail.set(email);
+            return true;
+        }
+        // Ako korisnik nije admin, smatramo prijavu neuspešnom za ovaj panel
+        return false;
+      }),
+      catchError(() => {
+        // Ako dobijemo 401 ili bilo koju drugu grešku, prijava je neuspešna
+        return of(false);
+      })
+    );
+  }
+
+  logout(): void {
+    localStorage.removeItem(this.authTokenKey);
+    localStorage.removeItem(this.userEmailKey);
+    this.isLoggedIn.set(false);
+    this.currentUserEmail.set(null);
+    this.router.navigate(['/login']);
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem(this.authTokenKey);
+  }
+
+  private hasToken(): boolean {
+    return !!localStorage.getItem(this.authTokenKey);
+  }
+}
+

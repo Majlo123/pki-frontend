@@ -1,1 +1,366 @@
-/* You can add global styles to this file, and also import other style files */
+// Paleta boja
+$color-bg: #0f172a;
+$color-bg-light: #1e293b;
+$color-bg-card: #1e293b;
+$color-text: #e5e7eb;
+$color-text-muted: #9ca3af;
+
+$color-primary: #3b82f6;
+$color-success: #22c55e;
+$color-danger: #ef4444;
+$color-warning: #facc15;
+
+$radius: 0.75rem;
+$transition: 0.25s ease;
+
+// Reset
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(180deg, $color-bg, $color-bg-light);
+  font-family: 'Segoe UI', sans-serif;
+  color: $color-text;
+  line-height: 1.5;
+}
+
+// Layout
+.page-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+// Notifikacije
+.notification {
+  padding: 1rem 1.25rem;
+  border-radius: $radius;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  animation: fadeInDown 0.4s $transition;
+
+  &__title {
+    font-weight: 700;
+  }
+
+  &--success {
+    background: rgba($color-success, 0.15);
+    border-left: 4px solid $color-success;
+    color: $color-success;
+  }
+
+  &--error {
+    background: rgba($color-danger, 0.15);
+    border-left: 4px solid $color-danger;
+    color: $color-danger;
+  }
+}
+
+// Header
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+
+  &__title {
+    font-size: 1.8rem;
+    font-weight: 700;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.75rem;
+  }
+}
+
+// Dugmad
+.btn {
+  padding: 0.6rem 1.2rem;
+  border-radius: $radius;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: background $transition, transform $transition;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &--primary {
+    background: $color-primary;
+    color: white;
+
+    &:hover {
+      background: darken($color-primary, 8%);
+    }
+  }
+
+  &--success {
+    background: $color-success;
+    color: white;
+
+    &:hover {
+      background: darken($color-success, 8%);
+    }
+  }
+
+  &--secondary {
+    background: $color-bg-card;
+    border: 1px solid $color-text-muted;
+    color: $color-text;
+
+    &:hover {
+      background: lighten($color-bg-card, 4%);
+    }
+  }
+
+  &--danger {
+    background: $color-danger;
+    color: white;
+
+    &:hover {
+      background: darken($color-danger, 8%);
+    }
+  }
+}
+
+// Tabela sertifikata
+.certificate-table {
+  background: $color-bg-card;
+  border-radius: $radius;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th, td {
+      padding: 1rem;
+      text-align: left;
+    }
+
+    thead {
+      background: rgba(255,255,255,0.05);
+      th {
+        font-size: 0.9rem;
+        color: $color-text-muted;
+        font-weight: 600;
+      }
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+
+      &:hover {
+        background: rgba(255,255,255,0.03);
+      }
+    }
+
+    .cell--important {
+      font-weight: 600;
+    }
+
+    .cell--monospace {
+      font-family: monospace;
+    }
+
+    .cell--actions {
+      text-align: right;
+    }
+  }
+
+  .table-message {
+    text-align: center;
+    padding: 2rem;
+    color: $color-text-muted;
+  }
+}
+
+// Status badge
+.status-badge {
+  padding: 0.3rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+
+  &--active {
+    background: rgba($color-success, 0.15);
+    color: $color-success;
+  }
+
+  &--revoked {
+    background: rgba($color-danger, 0.15);
+    color: $color-danger;
+  }
+}
+
+// Modal
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+
+  &__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(4px);
+  }
+
+  &__container {
+    position: relative;
+    background: $color-bg-card;
+    border-radius: $radius;
+    padding: 2rem;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+    animation: scaleIn 0.3s $transition;
+
+    &--lg { width: 700px; }
+    &--md { width: 450px; }
+  }
+
+  &__title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  &__subtitle {
+    font-size: 0.95rem;
+    color: $color-text-muted;
+    margin-bottom: 1rem;
+
+    .code {
+      font-family: monospace;
+      background: rgba(255,255,255,0.08);
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.3rem;
+    }
+  }
+
+  &__body {
+    margin-bottom: 1.5rem;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+  }
+}
+
+// Forme
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+
+  .form-group--full-width {
+    grid-column: span 2;
+  }
+}
+
+.form-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+
+  &.is-disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+.form-label {
+  margin-bottom: 0.3rem;
+  font-size: 0.85rem;
+  color: $color-text-muted;
+}
+
+.form-control {
+  padding: 0.6rem 0.8rem;
+  border-radius: $radius;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  color: $color-text;
+
+  &:focus {
+    outline: none;
+    border-color: $color-primary;
+    box-shadow: 0 0 0 2px rgba($color-primary, 0.3);
+  }
+}
+
+.error-message {
+  color: $color-danger;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+
+// Link akcija u tabeli
+.action-link {
+  background: none;
+  border: none;
+  color: $color-primary;
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: underline;
+  transition: color $transition;
+
+  &:hover {
+    color: lighten($color-primary, 10%);
+  }
+}
+
+.action-placeholder {
+  color: $color-text-muted;
+  font-size: 0.85rem;
+}
+
+// Animacije
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+// Spinner
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.4rem;
+  animation: spin 1s linear infinite;
+
+  path {
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}

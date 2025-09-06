@@ -5,9 +5,7 @@ import { RouterOutlet } from '@angular/router';
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  template: `<router-outlet></router-outlet>`, // Samo prikazuje komponentu za trenutnu rutu
 })
-export class AppComponent {
-  title = 'explorer';
-}
+export class AppComponent {}
+

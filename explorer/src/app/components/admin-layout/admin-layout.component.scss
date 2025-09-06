@@ -1,0 +1,199 @@
+// Importujemo globalne varijable da bismo ih mogli koristiti ovde
+@import '../../../../styles.scss';
+
+// Glavni kontejner za dashboard
+.dashboard-container {
+  padding: 2rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+// Zaglavlje sa naslovom i dugmadima
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap; // Omogućava prelamanje na manjim ekranima
+  gap: 1rem;
+
+  h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+
+  .actions {
+    display: flex;
+    gap: 0.75rem;
+  }
+}
+
+// Kontejner za tabelu
+.table-container {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden; // Osigurava da sadržaj ne "curi" preko zaobljenih ivica
+
+  .table-wrapper {
+    overflow-x: auto; // Dozvoljava horizontalno skrolovanje na malim ekranima
+  }
+}
+
+// Tabela
+table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  thead {
+    background-color: rgba(55, 65, 81, 0.5); // Polu-providna tamno siva
+    th {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  }
+
+  tbody {
+    tr {
+      border-top: 1px solid var(--color-border);
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: rgba(55, 65, 81, 0.3);
+      }
+    }
+
+    td {
+      color: var(--color-text-secondary);
+      font-size: 0.9rem;
+
+      &.font-medium {
+        color: var(--color-text-primary);
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+// Status bedževi
+.status-badge {
+  display: inline-flex;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &.active {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #34d399;
+  }
+
+  &.revoked {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+  }
+}
+
+// Akcije u tabeli
+.action-link {
+    color: var(--color-danger);
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s;
+
+    &:hover {
+        color: var(--color-danger-hover);
+    }
+}
+
+// Stilovi za Modale
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1rem;
+}
+
+.modal-content {
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 42rem; // Ograničava širinu modala
+  animation: scale-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  .modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1rem;
+
+    // Grid za 2 kolone na većim ekranima
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .form-group {
+        // Omogućava da polja zauzmu celu širinu grida ako je potrebno
+        &.col-span-2 {
+            grid-column: span 2 / span 2;
+        }
+    }
+
+    label {
+        display: block;
+        font-weight: 500;
+        color: var(--color-text-secondary);
+        margin-bottom: 0.5rem;
+    }
+  }
+
+  .modal-footer {
+    padding: 1rem 1.5rem;
+    background-color: rgba(55, 65, 81, 0.5);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    border-top: 1px solid var(--color-border);
+    border-bottom-left-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
+  }
+}
+
+// Animacije
+@keyframes scale-in {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
