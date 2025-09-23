@@ -55,8 +55,15 @@ export class AuthService {
     return localStorage.getItem(this.authTokenKey);
   }
 
+  register(data: any): Observable<any> {
+    return this.http.post(`${this.apiBaseUrl}/auth/register`, data);
+  }
+
+  recoverPassword(email: string): Observable<any> {
+    return this.http.post(`${this.apiBaseUrl}/auth/recover-password`, { email });
+  }
+
   private hasToken(): boolean {
     return !!localStorage.getItem(this.authTokenKey);
   }
 }
-
