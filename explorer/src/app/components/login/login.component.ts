@@ -14,7 +14,7 @@ import { FormsModule } from '@angular/forms';    // <<<<<< DODATO OVO
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
-  loginDetails = { email: 'admin@pki.com', password: 'admin123' };
+  loginDetails = { email: '', password: '' };
   errorMessage = signal('');
   isLoading = signal(false);
 

@@ -22,18 +22,18 @@ export class AuthService {
     const token = 'Basic ' + btoa(`${email}:${password}`);
     const headers = new HttpHeaders({ Authorization: token });
 
-    // Pozivamo /auth/me da proverimo da li je korisnik ADMIN
+    // Pozivamo /auth/me da proverimo da li je korisnik valjan
     return this.http.get<User>(`${this.apiBaseUrl}/auth/me`, { headers }).pipe(
       map((user) => {
-        // Proveravamo da li je uloga ADMIN
-        if (user && user.role === 'ADMIN') {
+        // Proveravamo da li je korisnik valjan i aktiviran (dozvoljavamo sve uloge)
+        if (user && user.enabled) {
             localStorage.setItem(this.authTokenKey, token);
             localStorage.setItem(this.userEmailKey, email);
             this.isLoggedIn.set(true);
             this.currentUserEmail.set(email);
             return true;
         }
-        // Ako korisnik nije admin, smatramo prijavu neuspešnom za ovaj panel
+        // Ako korisnik nije aktiviran, prijava je neuspešna
         return false;
       }),
       catchError(() => {
