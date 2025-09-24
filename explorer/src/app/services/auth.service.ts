@@ -22,7 +22,7 @@ export class AuthService {
 
   login(email: string, password: string, captchaToken?: string | null): Observable<{success: boolean, role?: string}> {
     const token = 'Basic ' + btoa(`${email}:${password}`);
-    const headers = new HttpHeaders({ 
+    const headers = new HttpHeaders({
       Authorization: token,
       ...(captchaToken && { 'X-Captcha-Token': captchaToken })
     });
