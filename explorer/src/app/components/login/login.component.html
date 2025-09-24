@@ -15,11 +15,20 @@
                  class="shadow appearance-none border border-gray-600 rounded-lg w-full py-3 px-4 bg-gray-700 text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
         </div>
 
+        <!-- reCAPTCHA -->
+        <div class="mb-4 flex justify-center">
+          <re-captcha
+            (resolved)="onCaptchaResolved($event)"
+            [theme]="'dark'"
+            [size]="'normal'">
+          </re-captcha>
+        </div>
+
         @if (errorMessage()) {
             <p class="text-red-400 text-center mb-4">{{ errorMessage() }}</p>
         }
 
-        <button type="submit" [disabled]="isLoading() || loginForm.invalid" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline w-full disabled:bg-indigo-800 disabled:cursor-not-allowed flex items-center justify-center">
+        <button type="submit" [disabled]="isLoading() || loginForm.invalid || !captchaResolved()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline w-full disabled:bg-indigo-800 disabled:cursor-not-allowed flex items-center justify-center">
              @if(isLoading()){
                 <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

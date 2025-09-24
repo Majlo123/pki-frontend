@@ -46,6 +46,7 @@ export class RegistrationComponent {
 
   register() {
     this.errorMessage = '';
+    
     if (this.registrationForm.invalid) {
       this.errorMessage = 'Popunite sva obavezna polja.';
       this.registrationForm.markAllAsTouched();
