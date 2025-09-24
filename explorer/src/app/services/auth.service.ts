@@ -12,13 +12,15 @@ export class AuthService {
   private apiBaseUrl = 'https://localhost:8443/api';
   private authTokenKey = 'pki_admin_token';
   private userEmailKey = 'pki_admin_email';
+  private userRoleKey = 'pki_user_role';
 
   isLoggedIn = signal<boolean>(this.hasToken());
   currentUserEmail = signal<string | null>(localStorage.getItem(this.userEmailKey));
+  currentUserRole = signal<string | null>(localStorage.getItem(this.userRoleKey));
 
   constructor(private http: HttpClient, private router: Router) { }
 
-  login(email: string, password: string): Observable<boolean> {
+  login(email: string, password: string): Observable<{success: boolean, role?: string}> {
     const token = 'Basic ' + btoa(`${email}:${password}`);
     const headers = new HttpHeaders({ Authorization: token });
 
@@ -29,16 +31,18 @@ export class AuthService {
         if (user && user.enabled) {
             localStorage.setItem(this.authTokenKey, token);
             localStorage.setItem(this.userEmailKey, email);
+            localStorage.setItem(this.userRoleKey, user.role);
             this.isLoggedIn.set(true);
             this.currentUserEmail.set(email);
-            return true;
+            this.currentUserRole.set(user.role);
+            return {success: true, role: user.role};
         }
         // Ako korisnik nije aktiviran, prijava je neuspešna
-        return false;
+        return {success: false};
       }),
       catchError(() => {
         // Ako dobijemo 401 ili bilo koju drugu grešku, prijava je neuspešna
-        return of(false);
+        return of({success: false});
       })
     );
   }
@@ -46,8 +50,10 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem(this.authTokenKey);
     localStorage.removeItem(this.userEmailKey);
+    localStorage.removeItem(this.userRoleKey);
     this.isLoggedIn.set(false);
     this.currentUserEmail.set(null);
+    this.currentUserRole.set(null);
     this.router.navigate(['/login']);
   }
 

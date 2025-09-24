@@ -1,0 +1,41 @@
+<div class="user-dashboard">
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1>Korisnički panel</h1>
+      <div class="user-info">
+        <span>{{ currentUserEmail() }}</span>
+        <button class="logout-btn" (click)="logout()">Odjavi se</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-main">
+    <div class="container">
+      <section class="certificates-section">
+        <h2>Moji sertifikati</h2>
+        
+        <div class="certificates-grid" *ngIf="certificates.length > 0; else noCertificates">
+          <div class="certificate-card" *ngFor="let cert of certificates">
+            <div class="cert-info">
+              <h3>{{ cert.commonName }}</h3>
+              <p><strong>Serial broj:</strong> {{ cert.serialNumber }}</p>
+              <p><strong>Važi do:</strong> {{ cert.validTo | date:'dd.MM.yyyy' }}</p>
+              <span class="cert-status" [class]="cert.status">{{ cert.status }}</span>
+            </div>
+            <div class="cert-actions">
+              <button class="btn-download">Preuzmi</button>
+              <button class="btn-revoke" *ngIf="cert.status === 'ACTIVE'">Opozovi</button>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noCertificates>
+          <div class="no-certificates">
+            <p>Nemate aktivne sertifikate.</p>
+            <button class="btn-request">Kreiraj novi sertifikat</button>
+          </div>
+        </ng-template>
+      </section>
+    </div>
+  </main>
+</div>
