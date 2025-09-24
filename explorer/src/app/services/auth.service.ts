@@ -20,9 +20,12 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) { }
 
-  login(email: string, password: string): Observable<{success: boolean, role?: string}> {
+  login(email: string, password: string, captchaToken?: string | null): Observable<{success: boolean, role?: string}> {
     const token = 'Basic ' + btoa(`${email}:${password}`);
-    const headers = new HttpHeaders({ Authorization: token });
+    const headers = new HttpHeaders({ 
+      Authorization: token,
+      ...(captchaToken && { 'X-Captcha-Token': captchaToken })
+    });
 
     // Pozivamo /auth/me da proverimo da li je korisnik valjan
     return this.http.get<User>(`${this.apiBaseUrl}/auth/me`, { headers }).pipe(
