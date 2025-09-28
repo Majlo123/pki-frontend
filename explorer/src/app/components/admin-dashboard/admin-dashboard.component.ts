@@ -82,7 +82,7 @@ export class DashboardComponent implements OnInit {
   onRevokeCertificate(): void {
     this.isLoading.set(true);
     this.errorMessage.set('');
-    this.certificateService.revokeCertificate(this.revokeModalData.serialNumber, this.revokeModalData.reason).subscribe({
+    this.certificateService.revokeAdminCertificate(this.revokeModalData.serialNumber, this.revokeModalData.reason).subscribe({
       next: () => {
         this.handleSuccess('Sertifikat je uspešno povučen.');
         this.loadCertificates();

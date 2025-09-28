@@ -1,0 +1,81 @@
+<div class="csr-requests-container">
+  <h2>Moji CSR Zahtevi</h2>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading" class="text-center">
+    <div class="spinner-border" role="status">
+      <span class="sr-only">Učitavanje...</span>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{errorMessage}}
+  </div>
+
+  <!-- Requests Table -->
+  <div *ngIf="!isLoading && requests.length > 0" class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Subject</th>
+          <th>Datum zahteva</th>
+          <th>Status</th>
+          <th>CA Sertifikat</th>
+          <th>Razlog odbacivanja</th>
+          <th>Izdati sertifikat</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let request of requests">
+          <td>{{request.id}}</td>
+          <td>{{request.subject}}</td>
+          <td>{{request.requestDate | date:'short'}}</td>
+          <td>
+            <span class="badge" [ngClass]="getStatusClass(request.status)">
+              {{getStatusText(request.status)}}
+            </span>
+          </td>
+          <td>{{request.caCertificateSubject || 'N/A'}}</td>
+          <td>
+            <span *ngIf="request.rejectionReason" class="text-danger">
+              {{request.rejectionReason}}
+            </span>
+            <span *ngIf="!request.rejectionReason">-</span>
+          </td>
+          <td>
+            <button
+              *ngIf="request.issuedCertificateId"
+              class="btn btn-sm btn-success"
+              (click)="viewIssuedCertificate(request.issuedCertificateId)">
+              <i class="fas fa-certificate"></i> Prikaži Sertifikat
+            </button>
+            <span *ngIf="!request.issuedCertificateId">-</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- No Requests Message -->
+  <div *ngIf="!isLoading && requests.length === 0" class="alert alert-info">
+    <h4>Nemate poslanih CSR zahteva</h4>
+    <p>Za sada nemate nijedan CSR zahtev. Možete poslati novi zahtev putem "Upload CSR" taba.</p>
+  </div>
+
+  <!-- Refresh Button -->
+  <div class="actions-bar">
+    <button class="btn btn-primary" (click)="refreshRequests()" [disabled]="isLoading">
+      <span *ngIf="isLoading" class="spinner-border spinner-border-sm mr-2"></span>
+      <i *ngIf="!isLoading" class="fas fa-sync-alt mr-2"></i>
+      Osveži
+    </button>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible">
+    {{successMessage}}
+    <button type="button" class="close" (click)="successMessage = ''">&times;</button>
+  </div>
+</div>

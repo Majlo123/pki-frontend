@@ -1,0 +1,163 @@
+<div class="user-certificates-container">
+  <h2>Moji Sertifikati</h2>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading" class="text-center">
+    <div class="spinner-border" role="status">
+      <span class="sr-only">Učitavanje...</span>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{errorMessage}}
+  </div>
+
+  <!-- Certificates Table -->
+  <div *ngIf="!isLoading && certificates.length > 0" class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Serial Number</th>
+          <th>Subject</th>
+          <th>Issuer</th>
+          <th>Valid From</th>
+          <th>Valid To</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cert of certificates">
+          <td>{{cert.serialNumber}}</td>
+          <td>{{cert.subject}}</td>
+          <td>{{cert.issuer}}</td>
+          <td>{{cert.validFrom | date:'short'}}</td>
+          <td>{{cert.validTo | date:'short'}}</td>
+          <td>
+            <span class="badge" [ngClass]="getCertificateStatusClass(cert)">
+              {{getCertificateStatus(cert)}}
+            </span>
+          </td>
+          <td>
+            <div class="btn-group" role="group">
+              <button
+                class="btn btn-sm btn-info"
+                (click)="viewCertificateDetails(cert.id)"
+                title="Pregled detalja">
+                <i class="fas fa-eye"></i> Detalji
+              </button>
+              <button
+                class="btn btn-sm btn-success"
+                (click)="downloadCertificate(cert.id)"
+                title="Preuzmi sertifikat">
+                <i class="fas fa-download"></i> Preuzmi
+              </button>
+              <button
+                *ngIf="!cert.revoked"
+                class="btn btn-sm btn-warning"
+                (click)="revokeCertificate(cert)"
+                title="Povuci sertifikat">
+                <i class="fas fa-ban"></i> Povuci
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- No Certificates Message -->
+  <div *ngIf="!isLoading && certificates.length === 0" class="alert alert-info">
+    <h4>Nemate izdatih sertifikata</h4>
+    <p>Za sada nemate nijedan sertifikat. Možete poslati CSR zahtev za izdavanje novog sertifikata.</p>
+  </div>
+
+  <!-- Certificate Details Modal -->
+  <div *ngIf="selectedCertificate" class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4>Detalji Sertifikata</h4>
+        <button class="close-btn" (click)="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="certificate-detail">
+          <strong>Serial Number:</strong> {{selectedCertificate.serialNumber}}
+        </div>
+        <div class="certificate-detail">
+          <strong>Subject:</strong> {{selectedCertificate.subject}}
+        </div>
+        <div class="certificate-detail">
+          <strong>Issuer:</strong> {{selectedCertificate.issuer}}
+        </div>
+        <div class="certificate-detail">
+          <strong>Valid From:</strong> {{selectedCertificate.validFrom | date:'full'}}
+        </div>
+        <div class="certificate-detail">
+          <strong>Valid To:</strong> {{selectedCertificate.validTo | date:'full'}}
+        </div>
+        <div class="certificate-detail">
+          <strong>Type:</strong> {{selectedCertificate.type}}
+        </div>
+        <div class="certificate-detail">
+          <strong>CA Certificate:</strong> {{selectedCertificate.ca ? 'Yes' : 'No'}}
+        </div>
+        <div *ngIf="selectedCertificate.revoked" class="certificate-detail">
+          <strong>Revocation Reason:</strong> {{selectedCertificate.revocationReason}}
+        </div>
+        <div *ngIf="selectedCertificate.revoked" class="certificate-detail">
+          <strong>Revocation Date:</strong> {{selectedCertificate.revocationDate | date:'full'}}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Revoke Certificate Modal -->
+  <div *ngIf="showRevokeModal" class="modal-overlay" (click)="closeRevokeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4>Povlačenje Sertifikata</h4>
+        <button class="close-btn" (click)="closeRevokeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="revokeForm" (ngSubmit)="confirmRevoke()">
+          <div class="form-group">
+            <label for="revocationReason">Razlog povlačenja (X.509 standard):</label>
+            <select
+              id="revocationReason"
+              formControlName="reason"
+              class="form-control"
+              required>
+              <option value="">Izaberite razlog...</option>
+              <option value="unspecified">Nespecifikovan</option>
+              <option value="keyCompromise">Kompromitovan ključ</option>
+              <option value="cACompromise">Kompromitovan CA</option>
+              <option value="affiliationChanged">Promena pripadnosti</option>
+              <option value="superseded">Zamenjen novim</option>
+              <option value="cessationOfOperation">Prestanak rada</option>
+              <option value="certificateHold">Privremeno povlačenje</option>
+              <option value="privilegeWithdrawn">Povlačenje privilegija</option>
+              <option value="aACompromise">Kompromitovan AA</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeRevokeModal()">
+              Otkaži
+            </button>
+            <button type="submit" class="btn btn-danger" [disabled]="!revokeForm.valid || isRevoking">
+              <span *ngIf="isRevoking" class="spinner-border spinner-border-sm mr-2"></span>
+              {{isRevoking ? 'Povlači se...' : 'Povuci Sertifikat'}}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible">
+    {{successMessage}}
+    <button type="button" class="close" (click)="successMessage = ''">&times;</button>
+  </div>
+</div>
