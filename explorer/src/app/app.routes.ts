@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
 import { DashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
 import { UserDashboardComponent } from './components/user-dashboard/user-dashboard.component';
+import { PasswordManagerComponent } from './components/password-manager/password-manager.component';
 
 import { authGuard } from './guards/auth.guard';
 import { AdminLayoutComponent } from './components/admin-layout/admin-layout.component';
@@ -27,17 +28,24 @@ export const routes: Routes = [
   },
 
   // Ruta za korisnički panel (END_ENTITY_USER)
-  { 
-    path: 'user/dashboard', 
-    component: UserDashboardComponent, 
-    canActivate: [authGuard] 
+  {
+    path: 'user/dashboard',
+    component: UserDashboardComponent,
+    canActivate: [authGuard]
+  },
+
+  // Password Manager ruta - dostupna samo EE korisnicima
+  {
+    path: 'user/password-manager',
+    component: PasswordManagerComponent,
+    canActivate: [authGuard]
   },
 
   // CA korisnik panel (dodaćemo kasnije)
-  // { 
-  //   path: 'ca/dashboard', 
-  //   component: CaDashboardComponent, 
-  //   canActivate: [authGuard] 
+  // {
+  //   path: 'ca/dashboard',
+  //   component: CaDashboardComponent,
+  //   canActivate: [authGuard]
   // },
 
   // Podrazumevane rute

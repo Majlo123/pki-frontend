@@ -37,6 +37,12 @@
           (click)="setActiveTab('sessions')">
           Aktivne Sesije
         </button>
+        <button
+          class="nav-tab"
+          [class.active]="activeTab === 'password-manager'"
+          (click)="setActiveTab('password-manager')">
+          Password Manager
+        </button>
       </nav>
 
       <!-- Tab Content -->
@@ -59,6 +65,11 @@
         <!-- Sessions Tab -->
         <div *ngIf="activeTab === 'sessions'" class="tab-pane">
           <app-user-sessions></app-user-sessions>
+        </div>
+
+        <!-- Password Manager Tab -->
+        <div *ngIf="activeTab === 'password-manager'" class="tab-pane">
+          <app-password-manager></app-password-manager>
         </div>
       </div>
     </div>
