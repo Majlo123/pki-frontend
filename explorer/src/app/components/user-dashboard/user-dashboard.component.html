@@ -31,6 +31,12 @@
           (click)="setActiveTab('csr-requests')">
           Moji Zahtevi
         </button>
+        <button
+          class="nav-tab"
+          [class.active]="activeTab === 'sessions'"
+          (click)="setActiveTab('sessions')">
+          Aktivne Sesije
+        </button>
       </nav>
 
       <!-- Tab Content -->
@@ -48,6 +54,11 @@
         <!-- CSR Requests Tab -->
         <div *ngIf="activeTab === 'csr-requests'" class="tab-pane">
           <app-csr-requests></app-csr-requests>
+        </div>
+
+        <!-- Sessions Tab -->
+        <div *ngIf="activeTab === 'sessions'" class="tab-pane">
+          <app-user-sessions></app-user-sessions>
         </div>
       </div>
     </div>
