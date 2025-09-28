@@ -11,31 +11,45 @@
 
   <main class="dashboard-main">
     <div class="container">
-      <section class="certificates-section">
-        <h2>Moji sertifikati</h2>
-        
-        <div class="certificates-grid" *ngIf="certificates.length > 0; else noCertificates">
-          <div class="certificate-card" *ngFor="let cert of certificates">
-            <div class="cert-info">
-              <h3>{{ cert.commonName }}</h3>
-              <p><strong>Serial broj:</strong> {{ cert.serialNumber }}</p>
-              <p><strong>Važi do:</strong> {{ cert.validTo | date:'dd.MM.yyyy' }}</p>
-              <span class="cert-status" [class]="cert.status">{{ cert.status }}</span>
-            </div>
-            <div class="cert-actions">
-              <button class="btn-download">Preuzmi</button>
-              <button class="btn-revoke" *ngIf="cert.status === 'ACTIVE'">Opozovi</button>
-            </div>
-          </div>
+      <!-- Navigation Tabs -->
+      <nav class="dashboard-nav">
+        <button
+          class="nav-tab"
+          [class.active]="activeTab === 'certificates'"
+          (click)="setActiveTab('certificates')">
+          Moji Sertifikati
+        </button>
+        <button
+          class="nav-tab"
+          [class.active]="activeTab === 'csr-upload'"
+          (click)="setActiveTab('csr-upload')">
+          Upload CSR
+        </button>
+        <button
+          class="nav-tab"
+          [class.active]="activeTab === 'csr-requests'"
+          (click)="setActiveTab('csr-requests')">
+          Moji Zahtevi
+        </button>
+      </nav>
+
+      <!-- Tab Content -->
+      <div class="tab-content">
+        <!-- Certificates Tab -->
+        <div *ngIf="activeTab === 'certificates'" class="tab-pane">
+          <app-user-certificates></app-user-certificates>
         </div>
 
-        <ng-template #noCertificates>
-          <div class="no-certificates">
-            <p>Nemate aktivne sertifikate.</p>
-            <button class="btn-request">Kreiraj novi sertifikat</button>
-          </div>
-        </ng-template>
-      </section>
+        <!-- CSR Upload Tab -->
+        <div *ngIf="activeTab === 'csr-upload'" class="tab-pane">
+          <app-csr-upload></app-csr-upload>
+        </div>
+
+        <!-- CSR Requests Tab -->
+        <div *ngIf="activeTab === 'csr-requests'" class="tab-pane">
+          <app-csr-requests></app-csr-requests>
+        </div>
+      </div>
     </div>
   </main>
 </div>

@@ -1,0 +1,68 @@
+<div class="csr-upload-container">
+  <h2>Upload CSR (Certificate Signing Request)</h2>
+
+  <form [formGroup]="csrForm" (ngSubmit)="onSubmit()" enctype="multipart/form-data">
+    <!-- CSR File Upload -->
+    <div class="form-group">
+      <label for="csrFile">CSR File (.pem ili .csr):</label>
+      <input
+        type="file"
+        id="csrFile"
+        accept=".pem,.csr,.txt"
+        (change)="onCsrFileSelected($event)"
+        class="form-control"
+        required>
+      <small class="text-muted">Unesite CSR fajl u PEM formatu</small>
+    </div>
+
+    <!-- Private Key File Upload (Optional) -->
+    <div class="form-group">
+      <label for="privateKeyFile">Private Key File (opciono):</label>
+      <input
+        type="file"
+        id="privateKeyFile"
+        accept=".pem,.key,.txt"
+        (change)="onPrivateKeyFileSelected($event)"
+        class="form-control">
+      <small class="text-muted">Opciono - privatni ključ u PEM formatu</small>
+    </div>
+
+    <!-- CA Certificate Selection -->
+    <div class="form-group">
+      <label for="caCertificate">Izaberite CA sertifikat:</label>
+      <select
+        id="caCertificate"
+        formControlName="caCertificateId"
+        class="form-control"
+        required>
+        <option value="">Izaberite CA sertifikat...</option>
+        <option
+          *ngFor="let ca of availableCAs"
+          [value]="ca.id">
+          {{ca.subject}} (Serial: {{ca.serialNumber}})
+        </option>
+      </select>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="form-group">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="!csrForm.valid || isSubmitting">
+        <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm mr-2"></span>
+        {{isSubmitting ? 'Šalje se...' : 'Pošalji CSR zahtev'}}
+      </button>
+    </div>
+  </form>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+    {{errorMessage}}
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="alert alert-success mt-3">
+    {{successMessage}}
+  </div>
+</div>
