@@ -1,0 +1,116 @@
+<div class="sessions-container">
+  <!-- Loading spinner -->
+  <div *ngIf="isLoading()" class="text-center">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Učitavanje...</span>
+    </div>
+    <p class="mt-2 text-muted">Učitavanje aktivnih sesija...</p>
+  </div>
+
+  <!-- Error message -->
+  <div *ngIf="errorMessage()" class="alert alert-danger" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    {{ errorMessage() }}
+  </div>
+
+  <!-- Success message -->
+  <div *ngIf="successMessage()" class="alert alert-success" role="alert">
+    <i class="fas fa-check-circle me-2"></i>
+    {{ successMessage() }}
+  </div>
+
+  <!-- Sessions content -->
+  <div *ngIf="!isLoading() && !errorMessage()">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="mb-0">Aktivne sesije</h4>
+      <div class="session-actions">
+        <button 
+          class="btn btn-outline-primary btn-sm me-2" 
+          (click)="loadActiveSessions()"
+          [disabled]="isLoading()">
+          <i class="fas fa-sync-alt me-1"></i>
+          Osveži
+        </button>
+        <button 
+          class="btn btn-warning btn-sm me-2" 
+          (click)="revokeAllOtherSessions()"
+          [disabled]="isLoading() || sessions().length <= 1">
+          <i class="fas fa-sign-out-alt me-1"></i>
+          Odjavi sve ostale
+        </button>
+        <button 
+          class="btn btn-danger btn-sm" 
+          (click)="logoutFromCurrentSession()"
+          [disabled]="isLoading()">
+          <i class="fas fa-power-off me-1"></i>
+          Odjavi se
+        </button>
+      </div>
+    </div>
+
+    <!-- Sessions list -->
+    <div *ngIf="sessions().length > 0" class="sessions-list">
+      <div *ngFor="let session of sessions()" class="session-card" [class.current-session]="isCurrentSession(session)">
+        <div class="session-header">
+          <div class="session-info">
+            <div class="session-title">
+              <i class="fas fa-desktop me-2"></i>
+              {{ getDeviceInfo(session.userAgent) }}
+              <span *ngIf="isCurrentSession(session)" class="badge bg-success ms-2">Trenutna sesija</span>
+            </div>
+            <div class="session-details">
+              <small class="text-muted">
+                <i class="fas fa-map-marker-alt me-1"></i>
+                IP: {{ session.ipAddress || 'Nepoznato' }}
+              </small>
+            </div>
+          </div>
+          <div class="session-actions-inline">
+            <button 
+              *ngIf="!isCurrentSession(session)" 
+              class="btn btn-outline-danger btn-sm"
+              (click)="revokeSession(session.id)"
+              [disabled]="isLoading()"
+              title="Opozvati sesiju">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="session-timestamps">
+          <div class="timestamp-item">
+            <small class="text-muted">
+              <i class="fas fa-clock me-1"></i>
+              <strong>Kreirana:</strong> {{ formatDate(session.createdAt) }}
+            </small>
+          </div>
+          <div class="timestamp-item">
+            <small class="text-muted">
+              <i class="fas fa-eye me-1"></i>
+              <strong>Poslednji pristup:</strong> {{ formatDate(session.lastAccessedAt) }}
+            </small>
+          </div>
+        </div>
+
+        <!-- User agent details (collapsed by default) -->
+        <div class="session-footer" *ngIf="session.userAgent">
+          <details>
+            <summary class="text-muted">
+              <small>Detalji o pregledaču</small>
+            </summary>
+            <small class="text-muted user-agent">{{ session.userAgent }}</small>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <!-- No sessions message -->
+    <div *ngIf="sessions().length === 0 && !isLoading()" class="no-sessions">
+      <div class="text-center py-5">
+        <i class="fas fa-desktop fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Nema aktivnih sesija</h5>
+        <p class="text-muted">Trenutno nemate aktivnih sesija ili koristite Basic autentifikaciju.</p>
+      </div>
+    </div>
+  </div>
+</div>

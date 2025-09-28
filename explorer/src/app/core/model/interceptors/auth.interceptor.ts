@@ -5,12 +5,12 @@ import { AuthService } from '../../../services/auth.service';
 // Presreće svaki HTTP zahtev i automatski dodaje Authorization heder ako korisnik ima token.
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
-  const authToken = authService.getToken();
-
-  // Ako token postoji i heder već nije postavljen, kloniraj zahtev i dodaj heder.
-  if (authToken && !req.headers.has('Authorization')) {
+  
+  // Koristimo novu metodu koja pravilno formatira header
+  if (authService.getToken() && !req.headers.has('Authorization')) {
+    const authHeaders = authService.getAuthHeaders();
     const clonedReq = req.clone({
-      headers: req.headers.set('Authorization', authToken)
+      headers: req.headers.set('Authorization', authHeaders.get('Authorization') || '')
     });
     return next(clonedReq);
   }

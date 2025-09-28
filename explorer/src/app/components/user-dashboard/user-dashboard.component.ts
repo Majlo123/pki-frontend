@@ -6,11 +6,12 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { UserCertificatesComponent } from '../user-certificates/user-certificates.component';
 import { CsrUploadComponent } from '../csr-upload/csr-upload.component';
 import { CsrRequestsComponent } from '../csr-requests/csr-requests.component';
+import { UserSessionsComponent } from '../user-sessions/user-sessions.component';
 
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, UserCertificatesComponent, CsrUploadComponent, CsrRequestsComponent],
+  imports: [CommonModule, UserCertificatesComponent, CsrUploadComponent, CsrRequestsComponent, UserSessionsComponent],
   templateUrl: './user-dashboard.component.html',
   styleUrls: ['./user-dashboard.component.scss']
 })
