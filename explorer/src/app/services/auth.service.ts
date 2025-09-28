@@ -112,7 +112,11 @@ export class AuthService {
 
   getAuthHeaders(): HttpHeaders {
     const token = this.getToken();
+    console.log('🔧 getAuthHeaders pozvan - token:', token ? token.substring(0, 20) + '...' : 'NEMA TOKENA');
+    console.log('🔧 useJwt signal vrednost:', this.useJwt());
+    
     if (!token) {
+      console.log('🔧 Vraćam prazan header - nema tokena');
       return new HttpHeaders();
     }
 
@@ -120,6 +124,8 @@ export class AuthService {
     const authHeader = this.useJwt() && !token.startsWith('Basic ') 
       ? `Bearer ${token}` 
       : token;
+
+    console.log('🔧 Finalni auth header:', authHeader.substring(0, 30) + '...');
 
     return new HttpHeaders({
       'Authorization': authHeader
