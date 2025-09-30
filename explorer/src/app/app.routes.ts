@@ -7,12 +7,18 @@ import { authGuard } from './guards/auth.guard';
 import { AdminLayoutComponent } from './components/admin-layout/admin-layout.component';
 import { RegistrationComponent } from './components/registration/registration.component';
 import { PasswordRecoveryComponent } from './components/password-recovery/password-recovery.component';
+import { IssueCertificateComponent } from './issue-certificate/issue-certificate.component';
 
 export const routes: Routes = [
   // Ruta za stranicu za prijavu
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegistrationComponent },
   { path: 'password-recovery', component: PasswordRecoveryComponent },
+  {
+    path: 'issue-certificate', // NOVO
+    component: IssueCertificateComponent,
+    canActivate: [authGuard] // Zaštiti i ovu rutu
+  },
 
   // Grupa ruta za administratorski deo, zaštićena "čuvarem" (guard)
   {

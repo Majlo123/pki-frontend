@@ -1,0 +1,85 @@
+<div class="form-container">
+  <header>
+    <h1>Izdavanje novog sertifikata</h1>
+  </header>
+  <form [formGroup]="issueForm" (ngSubmit)="onSubmit()">
+    
+    <fieldset>
+      <legend>Osnovne informacije</legend>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="certificateType">Tip sertifikata</label>
+          <select id="certificateType" formControlName="certificateType">
+            <option value="INTERMEDIATE">Intermediate</option>
+            <option value="END_ENTITY">End-Entity</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="issuerSerialNumber">Izdavalac (Issuer)</label>
+          <select id="issuerSerialNumber" formControlName="issuerSerialNumber">
+            <option value="" disabled>Izaberite izdavaoca...</option>
+            <option *ngFor="let issuer of availableIssuers" [value]="issuer.serialNumber">
+              {{ issuer.commonName }} (ističe: {{ issuer.validTo | date:'dd.MM.yyyy' }})
+            </option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset formGroupName="subjectData">
+      <legend>Podaci o vlasniku (Subject)</legend>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="commonName">Common Name (CN)</label>
+          <input id="commonName" type="text" formControlName="commonName">
+        </div>
+        <div class="form-group">
+          <label for="organization">Organization (O)</label>
+          <input id="organization" type="text" formControlName="organization">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="organizationalUnit">Organizational Unit (OU)</label>
+          <input id="organizationalUnit" type="text" formControlName="organizationalUnit">
+        </div>
+        <div class="form-group">
+          <label for="country">Country (C)</label>
+          <input id="country" type="text" formControlName="country" placeholder="RS">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" formControlName="email">
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Period važenja</legend>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="validFrom">Važi od</label>
+          <input id="validFrom" type="date" formControlName="validFrom">
+        </div>
+        <div class="form-group">
+          <label for="validTo">Važi do</label>
+          <input id="validTo" type="date" formControlName="validTo" [min]="minValidToDate" [max]="maxValidToDate">
+          <div *ngIf="issueForm.get('validTo')?.errors?.['dateExceedsIssuer']" class="error-msg">
+            Validnost ne može biti duža od validnosti izdavaoca.
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <div *ngIf="errorMessage" class="error-msg global-error">
+      {{ errorMessage }}
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" (click)="onCancel()">Odustani</button>
+      <button type="submit" class="btn-submit" [disabled]="issueForm.invalid || isLoading">
+        {{ isLoading ? 'Izdavanje...' : 'Izdaj sertifikat' }}
+      </button>
+    </div>
+  </form>
+</div>

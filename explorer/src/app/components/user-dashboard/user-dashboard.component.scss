@@ -116,6 +116,18 @@
   display: flex;
   gap: 0.5rem;
 }
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap; // Za manje ekrane
+  gap: 1rem;
+}
+
+.section-header h2 {
+  margin: 0; // Ukloni default marginu
+}
 
 .btn-download, .btn-revoke, .btn-request {
   padding: 0.5rem 1rem;
