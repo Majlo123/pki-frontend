@@ -52,44 +52,67 @@ export class DashboardComponent implements OnInit {
 
   // --- Logika za forme ---
   onIssueCertificate(): void {
-    this.isLoading.set(true);
-    this.errorMessage.set('');
-    const request = {
-      type: this.issueModalData.type,
-      issuerSerialNumber: this.issueModalData.type === 'ROOT' ? null : this.issueModalData.issuerSerialNumber,
-      validFrom: new Date(this.issueModalData.validFrom).toISOString(),
-      validTo: new Date(this.issueModalData.validTo).toISOString(),
-      subjectData: this.issueModalData.subjectData
-    };
-    this.certificateService.issueCertificate(request).subscribe({
-      next: () => {
-        this.handleSuccess('Sertifikat je uspešno izdat.');
-        this.loadCertificates();
-      },
-      error: err => this.handleError(err.error?.message || err.error || 'Greška prilikom izdavanja sertifikata.')
-    });
-  }
+  this.isLoading.set(true);
+  this.errorMessage.set('');
 
-  onAddCaUser(): void {
-    this.isLoading.set(true);
-    this.errorMessage.set('');
-    this.certificateService.addCaUser(this.addCaUserData).subscribe({
-      next: () => this.handleSuccess('CA korisnik je uspešno dodat.'),
-      error: err => this.handleError(err.error?.message || err.error || 'Greška prilikom dodavanja korisnika.')
-    });
-  }
+  const request = {
+    type: this.issueModalData.type,
+    issuerSerialNumber: this.issueModalData.type === 'ROOT' ? null : this.issueModalData.issuerSerialNumber,
+    validFrom: new Date(this.issueModalData.validFrom).toISOString(),
+    validTo: new Date(this.issueModalData.validTo).toISOString(),
+    subjectData: this.issueModalData.subjectData
+  };
+
+  this.certificateService.issueCertificate(request).subscribe({
+    next: res => {
+      // ako backend šalje "text" kao poruku uspeha
+      if (res?.text) {
+        this.handleSuccess(res.text);
+      } else {
+        this.handleSuccess('Sertifikat je uspešno izdat.');
+      }
+      this.loadCertificates();
+    },
+    error: err => {
+      const msg = err.error?.message || err.error?.text || err.error || 'Greška prilikom izdavanja sertifikata.';
+      this.handleError(msg);
+    }
+  });
+}
+
+
+ onAddCaUser(): void {
+  this.isLoading.set(true);
+  this.errorMessage.set('');
+  this.certificateService.addCaUser(this.addCaUserData).subscribe({
+    next: res => {
+      const message = res?.text || 'CA korisnik je uspešno dodat.';
+      this.handleSuccess(message);
+    },
+    error: err => {
+      const msg = this.extractErrorMessage(err);
+      this.handleError(msg);
+    }
+  });
+}
 
   onRevokeCertificate(): void {
-    this.isLoading.set(true);
-    this.errorMessage.set('');
-    this.certificateService.revokeAdminCertificate(this.revokeModalData.serialNumber, this.revokeModalData.reason).subscribe({
-      next: () => {
-        this.handleSuccess('Sertifikat je uspešno povučen.');
-        this.loadCertificates();
-      },
-      error: err => this.handleError(err.error?.message || err.error || 'Greška prilikom povlačenja sertifikata.')
-    });
-  }
+  this.isLoading.set(true);
+  this.errorMessage.set('');
+  this.certificateService.revokeAdminCertificate(
+    this.revokeModalData.serialNumber,
+    this.revokeModalData.reason
+  ).subscribe({
+    next: res => {
+      const message = res?.text || 'Sertifikat je uspešno povučen.';
+      this.handleSuccess(message);
+    },
+    error: err => {
+      const msg = this.extractErrorMessage(err);
+      this.handleError(msg);
+    }
+  });
+}
 
   // --- Pomoćne metode ---
 
@@ -119,17 +142,38 @@ export class DashboardComponent implements OnInit {
     };
   }
 
-  private handleSuccess(message: string): void {
-    this.successMessage.set(message);
-    this.isLoading.set(false);
-    this.closeAllModals();
-    setTimeout(() => this.successMessage.set(''), 4000);
-  }
+private handleSuccess(message: string): void {
+  this.successMessage.set(message);
+  this.isLoading.set(false);
+  this.closeAllModals();
 
-  private handleError(message: string): void {
-    this.errorMessage.set(message);
-    this.isLoading.set(false);
-  }
+  // Sačekaj kratko, pa osveži listu
+  setTimeout(() => {
+    this.loadCertificates();
+    this.successMessage.set('');
+  }, 1000);
+}
+
+
+
+private handleError(message: string): void {
+  this.errorMessage.set(message);
+  this.isLoading.set(false);
+
+  setTimeout(() => {
+    this.loadCertificates();
+    this.successMessage.set('');
+  }, 1000);
+}
+private extractErrorMessage(err: any): string {
+  if (!err) return 'Došlo je do greške.';
+  if (typeof err === 'string') return err;
+  if (typeof err.error === 'string') return err.error;
+  if (err.error?.text) return err.error.text;
+  if (err.error?.message) return err.error.message;
+  if (err.message) return err.message;
+  return JSON.stringify(err);
+}
 
   getCommonName(dn: string): string {
     if (!dn) return 'N/A (Self-Signed)';
