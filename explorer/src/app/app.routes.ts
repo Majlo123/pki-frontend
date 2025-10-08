@@ -8,6 +8,7 @@ import { AdminLayoutComponent } from './components/admin-layout/admin-layout.com
 import { RegistrationComponent } from './components/registration/registration.component';
 import { PasswordRecoveryComponent } from './components/password-recovery/password-recovery.component';
 import { IssueCertificateComponent } from './issue-certificate/issue-certificate.component';
+import { CADashboardComponent } from './components/ca-dashboard/ca-dashboard.component';
 
 export const routes: Routes = [
   // Ruta za stranicu za prijavu
@@ -39,12 +40,12 @@ export const routes: Routes = [
     canActivate: [authGuard] 
   },
 
-  // CA korisnik panel (dodaćemo kasnije)
-  // { 
-  //   path: 'ca/dashboard', 
-  //   component: CaDashboardComponent, 
-  //   canActivate: [authGuard] 
-  // },
+  // CA korisnik panel
+   { 
+     path: 'ca/dashboard', 
+     component: CADashboardComponent, 
+     canActivate: [authGuard] 
+   },
 
   // Podrazumevane rute
   { path: '', redirectTo: '/login', pathMatch: 'full' },
