@@ -46,8 +46,7 @@ export class LoginComponent {
             this.router.navigate(['/admin/dashboard']);
             break;
           case 'CA_USER':
-            // Zasad preusmeriti na user dashboard dok ne napravimo CA dashboard
-            this.router.navigate(['/user/dashboard']);
+            this.router.navigate(['/ca/dashboard']);
             break;
           case 'END_ENTITY_USER':
             this.router.navigate(['/user/dashboard']);
