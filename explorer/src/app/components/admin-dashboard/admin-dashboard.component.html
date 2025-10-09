@@ -5,7 +5,7 @@
             <span class="notification__message">{{ successMessage() }}</span>
         </div>
     }
-    @if (errorMessage() && !showIssueModal() && !showAddCaUserModal() && !showRevokeModal()) {
+    @if (errorMessage() && !showIssueModal() && !showAddCaUserModal() && !showRevokeModal() && !showTemplateModal()) {
         <div class="notification notification--error" role="alert">
             <strong class="notification__title">Greška!</strong>
             <span class="notification__message">{{ errorMessage() }}</span>
@@ -16,7 +16,7 @@
         <h1 class="page-header__title">Pregled Sertifikata</h1>
         <div class="page-header__actions">
             <button (click)="showAddCaUserModal.set(true)" class="btn btn--success">Dodaj CA Korisnika</button>
-            <button (click)="showIssueModal.set(true); issueModalData = getInitialIssueData()" class="btn btn--primary">Izdaj Sertifikat</button>
+            <button (click)="openIssueModal()" class="btn btn--primary">Izdaj Sertifikat</button>
         </div>
     </div>
 
@@ -34,7 +34,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if(isLoading()){
+                    @if(isLoading() && !certificates().length){
                         <tr><td colspan="6" class="table-message">Učitavanje...</td></tr>
                     }
                     @for(cert of certificates(); track cert.serialNumber){
@@ -67,8 +67,48 @@
             </table>
         </div>
     </div>
+
+    <!-- ===== NOVI DEO ZA ŠABLONE (sa ispravnim klasama) ===== -->
+    <div class="page-header" style="margin-top: 3rem; border-top: 1px solid #374151; padding-top: 2rem;">
+        <h2 class="page-header__title">Šabloni za Sertifikate</h2>
+        <div class="page-header__actions">
+             <button (click)="openTemplateModal()" class="btn btn--primary">Kreiraj Šablon</button>
+        </div>
+    </div>
+    <div class="certificate-table">
+        <div class="certificate-table__wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Naziv Šablona</th>
+                        <th>Vreme Trajanja (dani)</th>
+                        <th>Key Usage</th>
+                        <th>Extended Key Usage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if(isLoading() && !templates().length){
+                        <tr><td colspan="4" class="table-message">Učitavanje...</td></tr>
+                    }
+                    @for(template of templates(); track template.id){
+                      <tr>
+                        <td class="cell--important">{{ template.name }}</td>
+                        <td>{{ template.timeToLiveDays }}</td>
+                        <td class="cell--monospace">{{ template.keyUsage }}</td>
+                        <td class="cell--monospace">{{ template.extendedKeyUsage }}</td>
+                      </tr>
+                    } @empty {
+                        @if(!isLoading()){
+                           <tr><td colspan="4" class="table-message">Nema kreiranih šablona.</td></tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
+<!-- ===== AŽURIRANI MODALI (sa ispravnim klasama) ===== -->
 @if(showIssueModal()){
     <div class="modal">
         <div class="modal__backdrop" (click)="closeAllModals()"></div>
@@ -85,7 +125,6 @@
                                 <option value="ROOT">Root</option>
                             </select>
                         </div>
-
                         <div class="form-group" [class.is-disabled]="issueModalData.type === 'ROOT'">
                             <label class="form-label">Izdavalac (CA)</label>
                             <select name="issuerSerialNumber" [(ngModel)]="issueModalData.issuerSerialNumber" [disabled]="issueModalData.type === 'ROOT'" class="form-control">
@@ -95,16 +134,13 @@
                                 }
                             </select>
                         </div>
-
                         <input type="text" name="commonName" [(ngModel)]="issueModalData.subjectData.commonName" placeholder="Common Name (npr. www.sajt.com)" class="form-control" required>
                         <input type="text" name="organization" [(ngModel)]="issueModalData.subjectData.organization" placeholder="Organizacija" class="form-control" required>
                         <input type="text" name="organizationalUnit" [(ngModel)]="issueModalData.subjectData.organizationalUnit" placeholder="Organizaciona Jedinica" class="form-control" required>
                         <input type="text" name="country" [(ngModel)]="issueModalData.subjectData.country" placeholder="Država (kod)" class="form-control" required>
-
                         <div class="form-group form-group--full-width">
                             <input type="email" name="email" [(ngModel)]="issueModalData.subjectData.email" placeholder="Email" class="form-control" required>
                         </div>
-
                         <div class="form-group">
                             <label class="form-label">Važi Od</label>
                             <input type="date" name="validFrom" [(ngModel)]="issueModalData.validFrom" class="form-control" required>
@@ -116,18 +152,16 @@
                     </div>
                     @if (errorMessage()) { <p class="error-message">{{ errorMessage() }}</p> }
                 </div>
-
                 <div class="modal__footer">
                     <button type="button" (click)="closeAllModals()" class="btn btn--secondary">Otkaži</button>
                     <button type="submit" [disabled]="isLoading() || issueForm.invalid" class="btn btn--primary">
-                        @if(isLoading()){ <svg class="spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 4.75V6.25"></path><path d="M17.125 6.875L16.065 7.935"></path><path d="M19.25 12L17.75 12"></path><path d="M17.125 17.125L16.065 16.065"></path><path d="M12 19.25V17.75"></path><path d="M6.875 17.125L7.935 16.065"></path><path d="M4.75 12L6.25 12"></path><path d="M6.875 6.875L7.935 7.935"></path></svg> Izdavanje... } @else { Izdaj }
+                        @if(isLoading()){ <svg class="spinner" viewBox="0 0 24 24"></svg> Izdavanje... } @else { Izdaj }
                     </button>
                 </div>
             </form>
         </div>
     </div>
 }
-
 @if(showAddCaUserModal()){
     <div class="modal">
         <div class="modal__backdrop" (click)="closeAllModals()"></div>
@@ -146,14 +180,13 @@
                 <div class="modal__footer">
                     <button type="button" (click)="closeAllModals()" class="btn btn--secondary">Otkaži</button>
                     <button type="submit" [disabled]="isLoading() || addUserForm.invalid" class="btn btn--success">
-                        @if(isLoading()){ <svg class="spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 4.75V6.25"></path><path d="M17.125 6.875L16.065 7.935"></path><path d="M19.25 12L17.75 12"></path><path d="M17.125 17.125L16.065 16.065"></path><path d="M12 19.25V17.75"></path><path d="M6.875 17.125L7.935 16.065"></path><path d="M4.75 12L6.25 12"></path><path d="M6.875 6.875L7.935 7.935"></path></svg> Dodavanje... } @else { Dodaj }
+                        @if(isLoading()){ <svg class="spinner" viewBox="0 0 24 24"></svg> Dodavanje... } @else { Dodaj }
                     </button>
                 </div>
             </form>
         </div>
     </div>
 }
-
 @if(showRevokeModal()){
     <div class="modal">
         <div class="modal__backdrop" (click)="closeAllModals()"></div>
@@ -178,10 +211,37 @@
                 <div class="modal__footer">
                     <button type="button" (click)="closeAllModals()" class="btn btn--secondary">Otkaži</button>
                     <button type="submit" [disabled]="isLoading()" class="btn btn--danger">
-                        @if(isLoading()){ <svg class="spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 4.75V6.25"></path><path d="M17.125 6.875L16.065 7.935"></path><path d="M19.25 12L17.75 12"></path><path d="M17.125 17.125L16.065 16.065"></path><path d="M12 19.25V17.75"></path><path d="M6.875 17.125L7.935 16.065"></path><path d="M4.75 12L6.25 12"></path><path d="M6.875 6.875L7.935 7.935"></path></svg> Povlačenje... } @else { Potvrdi Povlačenje }
+                        @if(isLoading()){ <svg class="spinner" viewBox="0 0 24 24"></svg> Povlačenje... } @else { Potvrdi Povlačenje }
                     </button>
                 </div>
             </form>
         </div>
     </div>
 }
+@if(showTemplateModal()){
+    <div class="modal">
+        <div class="modal__backdrop" (click)="closeAllModals()"></div>
+        <div class="modal__container">
+            <form #templateForm="ngForm" (ngSubmit)="onCreateTemplate()">
+              <div class="modal__body">
+                <h3 class="modal__title">Kreiranje Novog Šablona</h3>
+                <div class="form-stacked">
+                 <input type="text" name="name" [(ngModel)]="templateModalData.name" placeholder="Naziv šablona" class="form-control" required>
+                 <input type="text" name="commonNameRegex" [(ngModel)]="templateModalData.commonNameRegex" placeholder="Regex za Common Name" class="form-control">
+                 <input type="number" name="timeToLiveDays" [(ngModel)]="templateModalData.timeToLiveDays" placeholder="Vreme trajanja (u danima)" class="form-control" required>
+                 <input type="text" name="keyUsage" [(ngModel)]="templateModalData.keyUsage" placeholder="Key Usage (npr. digitalSignature)" class="form-control">
+                 <input type="text" name="extendedKeyUsage" [(ngModel)]="templateModalData.extendedKeyUsage" placeholder="Extended Key Usage (npr. serverAuth)" class="form-control">
+                </div>
+              </div>
+               @if (errorMessage()) { <p class="error-message">{{ errorMessage() }}</p> }
+              <div class="modal__footer">
+                <button type="button" (click)="closeAllModals()" class="btn btn--secondary">Otkaži</button>
+                <button type="submit" [disabled]="isLoading() || templateForm.invalid" class="btn btn--primary">
+                    @if(isLoading()){ Kreiranje... } @else { Kreiraj }
+                </button>
+              </div>
+            </form>
+          </div>
+    </div>
+}
+

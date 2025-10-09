@@ -4,6 +4,15 @@ import { map, Observable } from 'rxjs';
 import { Certificate } from '../core/model/certificate.model';
 import { CertificateDetails, IssueCertificateRequest, IssuerDetails } from '../models/certificate.model';
 
+export interface Template {
+  id: number;
+  name: string;
+  commonNameRegex: string;
+  subjectAlternativeNamesRegex: string;
+  timeToLiveDays: number;
+  keyUsage: string;
+  extendedKeyUsage: string;
+}
 @Injectable({
   providedIn: 'root'
 })
@@ -43,7 +52,7 @@ export class CertificateService {
   // Vraća samo validne CA sertifikate koji se mogu koristiti kao izdavaoci
   getAvailableIssuers(): Observable<IssuerDetails[]> {
     return this.getOrganizationCertificates().pipe(
-      map(certs => 
+      map(certs =>
         certs
           .filter(cert => cert.type === 'ROOT' || cert.type === 'INTERMEDIATE') // 1. Filtriraj samo CA
           .map(cert => ({                                                      // 2. Mapiraj u IssuerDetails format
@@ -60,7 +69,7 @@ export class CertificateService {
     return this.http.post(`${this.caApiUrl}/issue`, request);
   }
 
- 
+
 
   // NOVO: Preuzima sertifikat (vraća fajl)
   downloadNewCertificate(serialNumber: string): Observable<Blob> {
@@ -116,5 +125,15 @@ export class CertificateService {
   // Dohvata dostupne CA sertifikate za potpisivanje
   getAvailableCaCertificates(): Observable<any[]> {
     return this.http.get<any[]>(`${this.userApiUrl}/ca-certificates`);
+  }
+  createTemplate(data: Omit<Template, 'id'>): Observable<Template> {
+    return this.http.post<Template>(`${this.adminApiUrl}/templates`, data);
+  }
+
+  /**
+   * Dohvata sve šablone.
+   */
+  getAllTemplates(): Observable<Template[]> {
+    return this.http.get<Template[]>(`${this.adminApiUrl}/templates`);
   }
 }
