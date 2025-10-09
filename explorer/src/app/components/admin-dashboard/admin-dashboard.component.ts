@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CertificateService } from '../../services/certificate.service';
+import { CertificateService,Template} from '../../services/certificate.service';
 import { Certificate } from '../../core/model/certificate.model';
 
 @Component({
@@ -14,42 +14,61 @@ export class DashboardComponent implements OnInit {
   certificates = signal<Certificate[]>([]);
   caCertificates = signal<Certificate[]>([]); // Lista samo CA sertifikata za dropdown
   isLoading = signal(true);
-
+  templates = signal<Template[]>([]);
   // Stanje za modale
   showIssueModal = signal(false);
   showAddCaUserModal = signal(false);
   showRevokeModal = signal(false);
-
+  showTemplateModal = signal(false);
   // Podaci za forme u modalima
   issueModalData = this.getInitialIssueData();
   addCaUserData = { email: '', firstName: '', lastName: '', organization: '' };
   revokeModalData = { serialNumber: '', reason: 'Unspecified' };
+  templateModalData = this.getInitialTemplateData();
 
   successMessage = signal('');
   errorMessage = signal('');
 
   constructor(private certificateService: CertificateService) {}
 
-  ngOnInit(): void {
-    this.loadCertificates();
+   ngOnInit(): void {
+    // Ažurirano da učitava sve potrebne podatke na početku
+    this.loadInitialData();
   }
 
-  loadCertificates(): void {
+  // <<<< AŽURIRANO: Sada učitava i sertifikate i šablone pri startu
+  loadInitialData(): void {
     this.isLoading.set(true);
+    Promise.all([
+      this.certificateService.getAllCertificates().toPromise(),
+      this.certificateService.getAllTemplates().toPromise()
+    ]).then(([certs, tmpls]) => {
+      if (certs) {
+        this.certificates.set(certs);
+        this.caCertificates.set(certs.filter(c => (c.type === 'ROOT' || c.type === 'INTERMEDIATE') && !c.revoked));
+      }
+      if (tmpls) {
+        this.templates.set(tmpls);
+      }
+      this.isLoading.set(false);
+    }).catch(err => {
+      this.handleError(this.extractErrorMessage(err));
+      this.isLoading.set(false);
+    });
+  }
+  loadCertificates(): void {
     this.certificateService.getAllCertificates().subscribe({
       next: data => {
         this.certificates.set(data);
-        // Filtriramo samo aktivne CA sertifikate koje možemo koristiti kao izdavaoce
         this.caCertificates.set(data.filter(c => (c.type === 'ROOT' || c.type === 'INTERMEDIATE') && !c.revoked));
-        this.isLoading.set(false);
-      },
-      error: err => {
-        this.handleError('Nije moguće učitati sertifikate.');
-        this.isLoading.set(false);
       }
     });
   }
-
+  loadTemplates(): void {
+     this.certificateService.getAllTemplates().subscribe({
+      next: data => this.templates.set(data)
+    });
+  }
   // --- Logika za forme ---
   onIssueCertificate(): void {
   this.isLoading.set(true);
@@ -79,6 +98,21 @@ export class DashboardComponent implements OnInit {
     }
   });
 }
+onCreateTemplate(): void {
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.certificateService.createTemplate(this.templateModalData).subscribe({
+      next: () => {
+        this.loadTemplates(); // Osvežavamo samo listu šablona
+        this.handleSuccess('Šablon je uspešno kreiran.');
+      },
+      error: err => this.handleError(this.extractErrorMessage(err))
+    });
+  }
+openTemplateModal(): void {
+    this.templateModalData = this.getInitialTemplateData();
+    this.showTemplateModal.set(true);
+  }
 
 
  onAddCaUser(): void {
@@ -125,6 +159,7 @@ export class DashboardComponent implements OnInit {
     this.showIssueModal.set(false);
     this.showAddCaUserModal.set(false);
     this.showRevokeModal.set(false);
+    this.showTemplateModal.set(false);
     this.errorMessage.set('');
   }
 
@@ -139,6 +174,16 @@ export class DashboardComponent implements OnInit {
       subjectData: {
         commonName: '', organization: '', organizationalUnit: '', country: 'RS', email: ''
       }
+    };
+  }
+  getInitialTemplateData(): Omit<Template, 'id'> {
+    return {
+      name: '',
+      commonNameRegex: '.*',
+      subjectAlternativeNamesRegex: '.*',
+      timeToLiveDays: 365,
+      keyUsage: 'digitalSignature',
+      extendedKeyUsage: 'serverAuth,clientAuth'
     };
   }
 
@@ -180,5 +225,10 @@ private extractErrorMessage(err: any): string {
     const match = dn.match(/CN=([^,]+)/);
     return match ? match[1] : dn;
   }
+ openIssueModal(): void {
+    this.issueModalData = this.getInitialIssueData();
+    this.showIssueModal.set(true);
+  }
 }
+
 
